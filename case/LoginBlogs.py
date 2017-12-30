@@ -16,3 +16,14 @@ class Blogs():
         for k, v in self.cookies.items():
             c.set(k, v)
             self.session.cookies.update(c)
+
+    def addDailyLog(self, AddData):
+        self.AddDailyLogURL = 'https://i.cnblogs.com/EditDiary.aspx?opt=1'
+        self.addData = AddData
+        self.AddReq = self.session.post(
+            self.AddDailyLogURL,
+            data=self.addData,
+            headers=self.Headers,
+            verify=True,
+            allow_redirects=True)
+        return self.AddReq.text

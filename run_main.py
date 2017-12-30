@@ -5,7 +5,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from HtmlTestRunner import HTMLTestRunner
+import HTMLTestRunner
 
 currentPath = os.getcwd()
 
@@ -25,7 +25,7 @@ def add_case(caseName='case', rule='test*.py'):
 
 
 def runCase(allCase, reportName='report'):
-    '''第二步，执行所有的测试用例，并把结果吸入HTML测试报告中'''
+    '''第二步，执行所有的测试用例，并把结果写入HTML测试报告中'''
     now = time.strftime('%Y_%m_%d_%H_%M_%S')
     reportPath = os.path.join(currentPath, reportName)  # c测试报告文件夹
     if not os.path.exists(reportPath):
@@ -34,11 +34,11 @@ def runCase(allCase, reportName='report'):
     print('report path %s' % reportPath)
     fp = open(reportAbsPath, 'wb')
     runner = HTMLTestRunner.HTMLTestRunner(
-        stream=fp, titles=u'自动化测试报告，测试结果如下：', description=u'用例执行情况：')
+        stream=fp, title=u'自动化测试报告，测试结果如下：', description=u'用例执行情况：')
 
     '''调用addCase函数返回值'''
     runner.run(allCase)
-    fp.closed()
+    fp.close()
 
 
 def getReportFile(reportPath):
@@ -53,7 +53,7 @@ def getReportFile(reportPath):
 
 def sendMail(sender, psw, receiver, smtpserver, reportFile, port):
     '''第四步，发送最新的测试报告内容'''
-    with open(reportFile, 'wb') as f:
+    with open(reportFile, 'rb') as f:
         mailBody = f.read()
     # 定义邮件内容
     msg = MIMEMultipart()
@@ -69,7 +69,7 @@ def sendMail(sender, psw, receiver, smtpserver, reportFile, port):
     msg.attach(att)
     try:
         smtp = smtplib.SMTP_SSL(smtpserver, port)
-    except:
+    except BaseException:
         smtp = smtplib.SMTP()
         smtp.connect(smtpserver, port)
     # 用户名密码
@@ -79,12 +79,12 @@ def sendMail(sender, psw, receiver, smtpserver, reportFile, port):
     print('test report email has send out !')
 
 
-if __name__ == '__main--':
+if __name__ == '__main__':
     allCase = add_case()  # 1,加载用例
     # 生成测试报告的路径
     runCase(allCase)  # 2，执行用例
     # 获取最新测试报告文件
-    reportPath = os.path.join(currentPath, 'report')  # 用例文件夹
+    reportPath = os.path.join(currentPath, 'report')  # 测试报告文件夹
     reportFile = getReportFile(reportPath)  # 3，获取最新的测试报告
     # 配置邮箱
     from config import readConfig
